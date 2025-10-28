@@ -16,15 +16,9 @@ public class MasterRouter implements HttpHandler {
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
 
-        if (path.equals("/produtos") && method.equals("GET")) {
-            produtoController.handleGetProdutos(exchange);
-
-        // No futuro, você adicionaria novas rotas aqui:
-        //} else if (path.equals("/clientes") && method.equals("GET")) {
-        //    clienteController.handleGetClientes(exchange);
-
+        if (path.equals("/produtos") && method.equals("POST")) {
+            produtoController.createProduto(exchange);
         } else {
-            // Se nenhuma rota corresponder, retorna 404 Not Found
             String response = "404 - Rota nao encontrada";
             exchange.sendResponseHeaders(404, response.getBytes().length);
             try (OutputStream os = exchange.getResponseBody()) {

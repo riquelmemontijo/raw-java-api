@@ -1,32 +1,53 @@
 package produto;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 
 public class ProdutoController {
 
-    public void handleGetProdutos(HttpExchange exchange) throws IOException {
-        // A lógica que estava no Main.java agora vive aqui.
-        List<Produto> produtos = List.of(
-                new Produto(1L, "Notebook Gamer", new BigDecimal("7500.00")),
-                new Produto(2L, "Mouse Vertical", new BigDecimal("250.50"))
-        );
+    private final Gson gson = new Gson();
 
-        String jsonResponse = produtos.stream()
-                .map(p -> String.format("{\"id\":%d,\"nome\":\"%s\",\"preco\":%s}",
-                        p.getId(), p.getNome(), p.getPreco().toPlainString()))
-                .collect(Collectors.joining(",", "[", "]"));
+    public void createProduto(HttpExchange exchange) throws IOException {
 
-        exchange.getResponseHeaders().set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(200, jsonResponse.getBytes().length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(jsonResponse.getBytes());
+        try(InputStream inputStream = exchange.getRequestBody();
+            ReadableByteChannel channel = Channels.newChannel(inputStream);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+            while (channel.read(buffer) != -1) {
+                buffer.flip();
+                outputStream.write(buffer.array(), 0, buffer.limit());
+                buffer.clear();
+            }
+
+            String json = outputStream.toString(StandardCharsets.UTF_8);
+
+            Produto produto = gson.fromJson(json, Produto.class);
+
+            ProdutoDAO produtoDAO = new ProdutoDAO();
+            produtoDAO.save(produto);
+
+            String response = gson.toJson(produto);
+            byte[] jsonBytes = response.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(201, jsonBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(jsonBytes);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
-
 }

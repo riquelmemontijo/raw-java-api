@@ -2,6 +2,7 @@ package produto;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
+import shared.Pagina;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,18 +52,17 @@ public class ProdutoController {
         }
     }
 
-    public Set<Produto> findAllProducts(HttpExchange exchange) throws SQLException {
+    public void findAllProducts(HttpExchange exchange) throws SQLException {
         try {
             Set<Produto> produtos = new ProdutoDAO().findAll();
-
-            String produtosJson = gson.toJson(produtos);
+            Pagina<Produto> produtoPagina = new Pagina(produtos);
+            String produtosJson = gson.toJson(produtoPagina);
             byte[] jsonBytes = produtosJson.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, jsonBytes.length);
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(jsonBytes);
             }
-            return produtos;
         } catch (IOException ex){
             throw new RuntimeException(ex);
         }

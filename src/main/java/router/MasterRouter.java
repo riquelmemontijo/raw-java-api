@@ -6,6 +6,7 @@ import produto.ProdutoController;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.SQLException;
 
 public class MasterRouter implements HttpHandler {
 
@@ -18,7 +19,15 @@ public class MasterRouter implements HttpHandler {
 
         if (path.equals("/produtos") && method.equals("POST")) {
             produtoController.createProduto(exchange);
-        } else {
+        }
+        else if (path.equals("/produtos") && method.equals("GET")) {
+            try {
+                produtoController.findAllProducts(exchange);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        else {
             String response = "404 - Rota nao encontrada";
             exchange.sendResponseHeaders(404, response.getBytes().length);
             try (OutputStream os = exchange.getResponseBody()) {

@@ -12,6 +12,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.Set;
 
 public class ProdutoController {
 
@@ -45,9 +46,25 @@ public class ProdutoController {
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(jsonBytes);
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public Set<Produto> findAllProducts(HttpExchange exchange) throws SQLException {
+        try {
+            Set<Produto> produtos = new ProdutoDAO().findAll();
+
+            String produtosJson = gson.toJson(produtos);
+            byte[] jsonBytes = produtosJson.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, jsonBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(jsonBytes);
+            }
+            return produtos;
+        } catch (IOException ex){
+            throw new RuntimeException(ex);
         }
     }
 }

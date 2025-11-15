@@ -86,6 +86,16 @@ public class ProdutoDAO {
         }
     }
 
+    public int delete(Long id) {
+        String sql = "DELETE FROM produto WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            return statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Integer countAllProdutos(){
         String sql = "SELECT COUNT(*) FROM produto";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {

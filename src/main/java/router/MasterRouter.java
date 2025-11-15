@@ -33,6 +33,9 @@ public class MasterRouter implements HttpHandler {
         else if (path.matches("/produtos/[0-9]+") && method.equals("PUT")) {
             produtoController.updateProduto(exchange);
         }
+        else if (path.matches("/produtos/[0-9]+") && method.equals("DELETE")) {
+            produtoController.deleteProduto(exchange);
+        }
         else {
             String response = "404 - Rota nao encontrada";
             exchange.sendResponseHeaders(404, response.getBytes().length);

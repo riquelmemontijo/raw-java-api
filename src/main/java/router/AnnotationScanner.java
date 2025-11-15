@@ -31,8 +31,10 @@ public class AnnotationScanner {
 
             for (Class<?> clazz : allApplicationClasses) {
                 if (clazz.isAnnotationPresent(Controller.class)) {
+                    Controller controllerAnnotation = clazz.getAnnotation(Controller.class);
+                    String basePath = controllerAnnotation.path();
                     Object controllerInstance = clazz.getDeclaredConstructor().newInstance();
-                    scanMethods(controllerInstance, routes);
+                    scanMethods(controllerInstance, basePath, routes);
                 }
             }
         } catch (Exception e) {
@@ -42,26 +44,31 @@ public class AnnotationScanner {
         return routes;
     }
 
-    private void scanMethods(Object controllerInstance, List<Route> routes) {
+    private void scanMethods(Object controllerInstance, String basePath, List<Route> routes) {
         for (Method method : controllerInstance.getClass().getDeclaredMethods()){
             if (method.isAnnotationPresent(Get.class)) {
                 Get annotation = method.getAnnotation(Get.class);
-                routes.add(createRoute("GET", annotation.path(), controllerInstance, method));
+                routes.add(createRoute("GET", basePath, annotation.path(), controllerInstance, method));
             } else if (method.isAnnotationPresent(Post.class)) {
                 Post annotation = method.getAnnotation(Post.class);
-                routes.add(createRoute("POST", annotation.path(), controllerInstance, method));
+                routes.add(createRoute("POST", basePath, annotation.path(), controllerInstance, method));
             } else if (method.isAnnotationPresent(Put.class)) {
                 Put annotation = method.getAnnotation(Put.class);
-                routes.add(createRoute("PUT", annotation.path(), controllerInstance, method));
+                routes.add(createRoute("PUT", basePath, annotation.path(), controllerInstance, method));
             } else if (method.isAnnotationPresent(Delete.class)) {
                 Delete annotation = method.getAnnotation(Delete.class);
-                routes.add(createRoute("DELETE", annotation.path(), controllerInstance, method));
+                routes.add(createRoute("DELETE", basePath, annotation.path(), controllerInstance, method));
             }
         }
     }
 
-    private Route createRoute(String httpMethod, String path, Object controller, Method method) {
-        String regexPath = path.replaceAll("\\{\\w+}", "[0-9]+");
+    private Route createRoute(String httpMethod, String basePath, String methodPath, Object controller, Method method) {
+        String fullPath = (basePath + methodPath).replaceAll("/+", "/");
+        if (fullPath.length() > 1 && fullPath.endsWith("/")) {
+            fullPath = fullPath.substring(0, fullPath.length() - 1);
+        }
+
+        String regexPath = fullPath.replaceAll("\\{\\w+}", "[0-9]+");
         Pattern pattern = Pattern.compile("^" + regexPath + "$");
 
         Consumer<HttpExchange> handler = exchange -> {

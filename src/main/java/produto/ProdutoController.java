@@ -12,10 +12,10 @@ import shared.utils.router.RouterUtils;
 import java.io.IOException;
 import java.util.Map;
 
-@Controller
+@Controller(path = "/produtos")
 public class ProdutoController {
 
-    @Post(path = "/produtos")
+    @Post
     public void createProduto(HttpExchange exchange) {
         GlobalExceptionHandler.handle(exchange, () -> {
                 Produto produto = RequestUtils.parseBody(exchange, Produto.class);
@@ -25,7 +25,7 @@ public class ProdutoController {
         });
     }
 
-    @Get(path = "/produtos")
+    @Get
     public void findAllProducts(HttpExchange exchange) {
         GlobalExceptionHandler.handle(exchange, () -> {
             Map<String, String> queryParameters = RouterUtils.getQueryParameters(exchange.getRequestURI().getQuery());
@@ -35,7 +35,7 @@ public class ProdutoController {
         });
     }
 
-    @Get(path = "/produtos/{id}")
+    @Get(path = "/{id}")
     public void findProdutoById(HttpExchange exchange) {
         GlobalExceptionHandler.handle(exchange, () -> {
             Long id = RouterUtils.getPathId(exchange);
@@ -56,7 +56,7 @@ public class ProdutoController {
         });
     }
 
-    @Put(path = "/produtos/{id}")
+    @Put(path = "/{id}")
     public void updateProduto(HttpExchange exchange) {
         GlobalExceptionHandler.handle(exchange, () -> {
             Long id = RouterUtils.getPathId(exchange);
@@ -73,7 +73,7 @@ public class ProdutoController {
         });
     }
 
-    @Delete(path = "/produtos/{id}")
+    @Delete(path = "/{id}")
     public void deleteProduto(HttpExchange exchange) {
         GlobalExceptionHandler.handle(exchange, () -> {
             Long id = RouterUtils.getPathId(exchange);

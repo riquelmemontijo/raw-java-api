@@ -9,11 +9,9 @@ import java.net.InetSocketAddress;
 @ApiApplication
 public class Main {
 
-    static void main() throws IOException, InterruptedException {
+    static void main() throws IOException {
         var databaseInitializer = new DataBaseInitializerConfig();
         databaseInitializer.initializeDatabase();
-
-        Thread.sleep(3000);
 
         var server = HttpServer.create(new InetSocketAddress(8080), 0);
         server.createContext("/", new MasterRouter());

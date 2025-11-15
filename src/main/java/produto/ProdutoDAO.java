@@ -74,6 +74,18 @@ public class ProdutoDAO {
         }
     }
 
+    public int update(Produto produto) {
+        String sql = "UPDATE produto SET nome = ?, preco = ? WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, produto.getNome());
+            statement.setBigDecimal(2, produto.getPreco());
+            statement.setLong(3, produto.getId());
+            return statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Integer countAllProdutos(){
         String sql = "SELECT COUNT(*) FROM produto";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {

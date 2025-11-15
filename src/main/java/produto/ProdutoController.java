@@ -55,4 +55,29 @@ public class ProdutoController {
         }
     }
 
+    public void updateProduto(HttpExchange exchange) {
+        try {
+            Long id = RouterUtils.getPathId(exchange);
+            Produto produtoDoRequest = RequestUtils.parseBody(exchange, Produto.class);
+            produtoDoRequest.setId(id); // Garante que o ID da URL seja usado
+
+            ProdutoDAO produtoDAO = new ProdutoDAO();
+            int linhasAfetadas = produtoDAO.update(produtoDoRequest);
+
+            if (linhasAfetadas > 0) {
+                ResponseUtils.create(exchange).withBody(produtoDoRequest).send();
+            } else {
+                ResponseUtils.create(exchange).withStatusCode(404).send();
+            }
+        } catch (NumberFormatException e) {
+            try {
+                ResponseUtils.create(exchange).withStatusCode(400).withBody("ID do produto inválido.").send();
+            } catch (IOException ioException) {
+                throw new RuntimeException(ioException);
+            }
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

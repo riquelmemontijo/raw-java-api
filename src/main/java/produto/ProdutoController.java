@@ -34,5 +34,25 @@ public class ProdutoController {
             throw new RuntimeException(ex);
         }
     }
+    
+    public void findProdutoById(HttpExchange exchange) {
+        try {
+            Long id = RouterUtils.getPathId(exchange);
+            ProdutoDAO produtoDAO = new ProdutoDAO();
+            Produto produto = produtoDAO.findById(id).orElseThrow(RuntimeException::new);
+            ResponseUtils.create(exchange).withBody(produto).withStatusCode(200).send();
+        } catch (NumberFormatException e) {
+            try {
+                ResponseUtils.create(exchange)
+                        .withStatusCode(400)
+                        .withBody("ID do produto inválido.")
+                        .send();
+            } catch (IOException ioException) {
+                throw new RuntimeException(ioException);
+            }
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

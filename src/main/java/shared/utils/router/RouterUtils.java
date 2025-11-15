@@ -1,5 +1,7 @@
 package shared.utils.router;
 
+import com.sun.net.httpserver.HttpExchange;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -22,6 +24,16 @@ public class RouterUtils {
                         pair -> decode(pair[1])
                 ));
     }
+
+    public static Long getPathId(HttpExchange exchange) {
+        String path = exchange.getRequestURI().getPath();
+        String[] segments = path.split("/");
+        if (segments.length == 0) {
+            throw new NumberFormatException("Caminho da URL vazio ou inválido.");
+        }
+        return Long.parseLong(segments[segments.length - 1]);
+    }
+
 
     private static String decode(final String encoded) {
         return URLDecoder.decode(encoded, StandardCharsets.UTF_8);

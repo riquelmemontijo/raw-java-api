@@ -57,6 +57,23 @@ public class ProdutoDAO {
         }
     }
 
+    public Optional<Produto> findById(Long id){
+        String sql = "SELECT id, nome, preco FROM produto WHERE id = ?";
+        Produto produto = null;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                String nome = resultSet.getString("nome");
+                BigDecimal preco = resultSet.getBigDecimal("preco");
+                produto = new Produto(id, nome, preco);
+            }
+            return Optional.ofNullable(produto);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Integer countAllProdutos(){
         String sql = "SELECT COUNT(*) FROM produto";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {

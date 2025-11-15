@@ -2,6 +2,7 @@ package produto;
 
 import com.sun.net.httpserver.HttpExchange;
 import infra.controlleradvide.GlobalExceptionHandler;
+import router.anotacoes.*;
 import shared.paginacao.Pagina;
 import shared.paginacao.Paginavel;
 import shared.utils.request.RequestUtils;
@@ -9,11 +10,12 @@ import shared.utils.response.ResponseUtils;
 import shared.utils.router.RouterUtils;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Map;
 
+@Controller
 public class ProdutoController {
 
+    @Post(path = "/produtos")
     public void createProduto(HttpExchange exchange) {
         GlobalExceptionHandler.handle(exchange, () -> {
                 Produto produto = RequestUtils.parseBody(exchange, Produto.class);
@@ -23,7 +25,8 @@ public class ProdutoController {
         });
     }
 
-    public void findAllProducts(HttpExchange exchange) throws SQLException {
+    @Get(path = "/produtos")
+    public void findAllProducts(HttpExchange exchange) {
         GlobalExceptionHandler.handle(exchange, () -> {
             Map<String, String> queryParameters = RouterUtils.getQueryParameters(exchange.getRequestURI().getQuery());
             Paginavel paginavel = Paginavel.fromParameters(queryParameters);
@@ -31,7 +34,8 @@ public class ProdutoController {
             ResponseUtils.create(exchange).withBody(produtoPagina).withStatusCode(200).send();
         });
     }
-    
+
+    @Get(path = "/produtos/{id}")
     public void findProdutoById(HttpExchange exchange) {
         GlobalExceptionHandler.handle(exchange, () -> {
             Long id = RouterUtils.getPathId(exchange);
@@ -52,6 +56,7 @@ public class ProdutoController {
         });
     }
 
+    @Put(path = "/produtos/{id}")
     public void updateProduto(HttpExchange exchange) {
         GlobalExceptionHandler.handle(exchange, () -> {
             Long id = RouterUtils.getPathId(exchange);
@@ -68,6 +73,7 @@ public class ProdutoController {
         });
     }
 
+    @Delete(path = "/produtos/{id}")
     public void deleteProduto(HttpExchange exchange) {
         GlobalExceptionHandler.handle(exchange, () -> {
             Long id = RouterUtils.getPathId(exchange);

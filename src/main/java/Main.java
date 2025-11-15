@@ -1,15 +1,25 @@
 import com.sun.net.httpserver.HttpServer;
 import database.DataBaseInitializerConfig;
 import router.MasterRouter;
+import router.anotacoes.ApiApplication;
 
-void main() throws IOException {
+import java.io.IOException;
+import java.net.InetSocketAddress;
 
-    var databaseInitializer = new DataBaseInitializerConfig();
-    databaseInitializer.initializeDatabase();
+@ApiApplication
+public class Main {
 
-    var server = HttpServer.create(new InetSocketAddress(8080), 0);
-    server.createContext("/", new MasterRouter());
-    server.setExecutor(null);
-    server.start();
-    System.out.println("Servidor rodando na porta 8080");
+    static void main() throws IOException, InterruptedException {
+        var databaseInitializer = new DataBaseInitializerConfig();
+        databaseInitializer.initializeDatabase();
+
+        Thread.sleep(3000);
+
+        var server = HttpServer.create(new InetSocketAddress(8080), 0);
+        server.createContext("/", new MasterRouter());
+        server.setExecutor(null);
+        server.start();
+        System.out.println("Servidor rodando na porta 8080");
+    }
+
 }

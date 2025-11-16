@@ -1,15 +1,13 @@
 import com.sun.net.httpserver.HttpServer;
 import database.DataBaseInitializerConfig;
 import router.MasterRouter;
-import router.anotacoes.ApiApplication;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-@ApiApplication
 public class Main {
 
-    static void main() throws IOException {
+    public static void main(String[] args) throws IOException {
         var databaseInitializer = new DataBaseInitializerConfig();
         databaseInitializer.initializeDatabase();
 

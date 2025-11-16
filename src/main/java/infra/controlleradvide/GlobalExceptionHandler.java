@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
                     .withStatusCode(statusCode)
                     .withBody(errorResponse)
                     .send();
-        } catch (IOException _) {
+        } catch (IOException ignored) {
         }
     }
 

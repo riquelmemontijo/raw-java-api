@@ -37,42 +37,128 @@ A arquitetura do projeto gira em torno do `MasterRouter`, que atua como o ponto 
 
 ## 🚀 Como Executar o Projeto
 
-1.  **Inicie os serviços de dependência (ex: banco de dados):**
+### Opção 1: Usando Docker (Recomendado)
 
-    O ptojeto utiliza o docker para rodar o banco de dados MySQL, então, execute o comando na raiz do projeto para iniciá-los em segundo plano:
-     ```bash
-     docker-compose up -d
+A forma mais simples de executar o projeto é utilizando Docker Compose, que irá subir tanto a aplicação quanto o banco de dados MySQL automaticamente.
 
-2.  **Inicie a API Java:**
+1.  **Execute o comando na raiz do projeto:**
 
-    Execute a classe principal (`Main`) que contém a anotação `@ApiApplication`. Isso irá configurar e iniciar o servidor HTTP.
+    ```bash
+    docker-compose up --build
+    ```
+
+    Este comando irá:
+    - Compilar o projeto Java usando Maven
+    - Criar um JAR executável com todas as dependências
+    - Subir o banco de dados MySQL
+    - Subir a aplicação Java
+
+2.  **Acesse a aplicação:**
+
+    A API estará disponível em `http://localhost:8080`
+
+3.  **Para parar os containers:**
+
+    ```bash
+    docker-compose down
+    ```
+
+**Variáveis de ambiente configuradas:**
+- `DB_URL`: jdbc:mysql://db:3306/rawdb
+- `DB_USER`: user
+- `DB_PASSWORD`: password
+
+### Opção 2: Executando Localmente
+
+Se preferir rodar a aplicação diretamente na sua máquina:
+
+1.  **Inicie apenas o banco de dados com Docker:**
+
+    ```bash
+    docker-compose up -d db
+    ```
+
+2.  **Compile o projeto:**
+
+    ```bash
+    mvn clean package
+    ```
+
+3.  **Execute a aplicação:**
+
+    ```bash
+    java -jar target/raw-java-api-1.0-SNAPSHOT.jar
+    ```
+
+    Ou execute a classe `Main` diretamente pela sua IDE.
 
 **Exemplo de classe `Main`:**
 
 ```java
 import com.sun.net.httpserver.HttpServer;
+import database.DataBaseInitializerConfig;
 import router.MasterRouter;
-import router.anotacoes.ApiApplication;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-@ApiApplication
 public class Main {
-    static void main(String[] args) throws IOException {
-        int port = 8080;
-        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+    public static void main(String[] args) throws IOException {
+        var databaseInitializer = new DataBaseInitializerConfig();
+        databaseInitializer.initializeDatabase();
 
+        var server = HttpServer.create(new InetSocketAddress(8080), 0);
         server.createContext("/", new MasterRouter());
-
         server.setExecutor(null);
         server.start();
-        System.out.println("Servidor iniciado na porta " + port);
+        System.out.println("Servidor rodando na porta 8080");
     }
 }
 ```
 
-Após executar esta classe, o servidor estará ativo e pronto para receber requisições.
+Após executar, o servidor estará ativo e pronto para receber requisições.
+
+## 📋 Documentação da API
+
+### Endpoints Disponíveis
+
+#### Produtos
+
+**Base URL:** `/produtos`
+
+| Método | Endpoint | Descrição | Body | Resposta |
+|--------|----------|-----------|------|----------|
+| `GET` | `/produtos` | Lista todos os produtos (com paginação) | - | `200 OK` - Lista paginada de produtos |
+| `GET` | `/produtos/{id}` | Busca um produto por ID | - | `200 OK` - Produto encontrado<br>`404 Not Found` - Produto não existe |
+| `POST` | `/produtos` | Cria um novo produto | `{"nome": "string", "preco": number}` | `201 Created` - Produto criado |
+| `PUT` | `/produtos/{id}` | Atualiza um produto existente | `{"nome": "string", "preco": number}` | `200 OK` - Produto atualizado<br>`204 No Content` - Nenhuma linha afetada |
+| `DELETE` | `/produtos/{id}` | Deleta um produto por ID | - | `204 No Content` - Produto deletado<br>`404 Not Found` - Produto não existe |
+
+**Parâmetros de Query (Paginação):**
+- `page`: Número da página (padrão: 0)
+- `size`: Quantidade de itens por página (padrão: 10)
+
+**Exemplo de requisição:**
+```bash
+# Criar produto
+curl -X POST http://localhost:8080/produtos \
+  -H "Content-Type: application/json" \
+  -d '{"nome": "Notebook", "preco": 3500.00}'
+
+# Listar produtos com paginação
+curl http://localhost:8080/produtos?page=0&size=10
+
+# Buscar produto por ID
+curl http://localhost:8080/produtos/1
+
+# Atualizar produto
+curl -X PUT http://localhost:8080/produtos/1 \
+  -H "Content-Type: application/json" \
+  -d '{"nome": "Notebook Gamer", "preco": 4500.00}'
+
+# Deletar produto
+curl -X DELETE http://localhost:8080/produtos/1
+```
 
 ## 📝 Como Adicionar Novas Rotas
 
@@ -90,9 +176,7 @@ public class UserController {
 
     @Get
     public void getAllUsers(HttpExchange exchange) {
-        GlobalExceptionHandler.handle(exchange, () ->{
-            // lógica do metodo
-        });
+        // lógica do metodo
     }
 }
 ```
